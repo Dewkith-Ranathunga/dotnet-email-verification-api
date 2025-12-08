@@ -30,3 +30,9 @@ D:\.NET  Learning\User Management System\UserManagement.Api\obj\Debug\net9.0\ref
 D:\.NET  Learning\User Management System\UserManagement.Api\obj\Debug\net9.0\UserManagement.Api.pdb
 D:\.NET  Learning\User Management System\UserManagement.Api\obj\Debug\net9.0\UserManagement.Api.genruntimeconfig.cache
 D:\.NET  Learning\User Management System\UserManagement.Api\obj\Debug\net9.0\ref\UserManagement.Api.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Relational.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\bin\Debug\net9.0\MySqlConnector.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\bin\Debug\net9.0\Pomelo.EntityFrameworkCore.MySql.dll
+D:\.NET  Learning\User Management System\UserManagement.Api\obj\Debug\net9.0\UserManagement.Api.sourcelink.json
