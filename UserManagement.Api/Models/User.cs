@@ -2,8 +2,14 @@ namespace UserManagement.Api.Models;
 
 public class User
 {
-    public int Id { get; set; }          // Primary key
-    public required string Name { get; set; }     // User full name
-    public required string Email { get; set; }    // User email
-    public required string Password { get; set; } // Encrypted later
+    public int Id { get; set; }
+
+    public required string Name { get; set; }
+    public required string Email { get; set; }
+    public required string Password { get; set; }
+
+    // Email verification fields
+    public bool IsEmailVerified { get; set; } = false;
+    public string? VerificationToken { get; set; }
+    public DateTime? VerificationTokenExpiry { get; set; }
 }
