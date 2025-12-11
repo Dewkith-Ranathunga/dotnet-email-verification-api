@@ -24,7 +24,7 @@ public class UsersController : ControllerBase
     // REGISTER + SEND EMAIL TOKEN
     // -------------------------------------------------------------
     [HttpPost("register")]
-    public async Task<IActionResult> Register(User user)
+    public async Task<IActionResult> Register(User user) 
     {
         // generate verification token
         user.VerificationToken = Guid.NewGuid().ToString(); // Guid is a globally unique identifier used to create unique tokens
@@ -55,7 +55,7 @@ public class UsersController : ControllerBase
         };
 
         using var client = new SmtpClient();
-        await client.ConnectAsync(_config["EmailSettings:Host"], int.Parse(_config["EmailSettings:Port"]), false);
+        await client.ConnectAsync(_config["EmailSettings:Host"], int.Parse(_config["EmailSettings:Port"]!), false);
         await client.AuthenticateAsync(_config["EmailSettings:Email"], _config["EmailSettings:Password"]);
         await client.SendAsync(message);
         await client.DisconnectAsync(true);
