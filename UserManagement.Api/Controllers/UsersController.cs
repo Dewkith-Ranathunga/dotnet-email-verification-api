@@ -1,29 +1,113 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UserManagement.Api.Data;
-using UserManagement.Api.Models;
+using Microsoft.AspNetCore.Mvc; // for controller functionalities like routing, HTTP methods etc
+using Microsoft.EntityFrameworkCore; // for database operations using Entity Framework Core like querying, saving changes etc
+using UserManagement.Api.Data; // for accessing the AppDbContext which represents the database session like tables and relationships
+using UserManagement.Api.Models; // for accessing the User model which represents the user entity in the database like properties and validation
+using MailKit.Net.Smtp; // for sending emails using SMTP protocol like connecting to server, authenticating, sending messages etc
+using MimeKit; // for creating and manipulating email messages like setting sender, recipient, subject, body etc
 
-namespace UserManagement.Api.Controllers;
+namespace UserManagement.Api.Controllers; // namespace declaration for organizing code and avoiding name conflicts
 
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IConfiguration _config;
 
-    public UsersController(AppDbContext context)
+    public UsersController(AppDbContext context, IConfiguration config)
     {
-        _context = context;
+        _context = context; // initialize database context for CRUD operations
+        _config = config; // initialize configuration for accessing app settings like email credentials
     }
 
-    // GET: api/users
+    // -------------------------------------------------------------
+    // REGISTER + SEND EMAIL TOKEN
+    // -------------------------------------------------------------
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(User user)
+    {
+        // generate verification token
+        user.VerificationToken = Guid.NewGuid().ToString(); // Guid is a globally unique identifier used to create unique tokens
+        user.VerificationTokenExpiry = DateTime.Now.AddHours(1); // token valid for 1 hour
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // send email
+        await SendVerificationEmail(user.Email, user.VerificationToken!);
+
+        return Ok("Registered successfully. Please check your email to verify.");
+    }
+
+    // FUNCTION: Send email
+    private async Task SendVerificationEmail(string email, string token)
+    {
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("User System", _config["EmailSettings:Email"]));
+        message.To.Add(new MailboxAddress("", email));
+        message.Subject = "Verify your email";
+
+        string verifyUrl = $"http://localhost:5077/api/users/verify?token={token}";
+
+        message.Body = new TextPart("plain")
+        {
+            Text = $"Click here to verify your email: {verifyUrl}"
+        };
+
+        using var client = new SmtpClient();
+        await client.ConnectAsync(_config["EmailSettings:Host"], int.Parse(_config["EmailSettings:Port"]), false);
+        await client.AuthenticateAsync(_config["EmailSettings:Email"], _config["EmailSettings:Password"]);
+        await client.SendAsync(message);
+        await client.DisconnectAsync(true);
+    }
+
+    // -------------------------------------------------------------
+    // VERIFY EMAIL
+    // -------------------------------------------------------------
+    [HttpGet("verify")]
+    public async Task<IActionResult> VerifyEmail(string token)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.VerificationToken == token);
+
+        if (user == null || user.VerificationTokenExpiry < DateTime.Now)
+            return BadRequest("Invalid or expired token");
+
+        user.IsEmailVerified = true;
+        user.VerificationToken = null;
+        user.VerificationTokenExpiry = null;
+
+        await _context.SaveChangesAsync();
+
+        return Ok("Email verified successfully!");
+    }
+
+    // -------------------------------------------------------------
+    // LOGIN (email must be verified)
+    // -------------------------------------------------------------
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(string email, string password)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+
+        if (user == null)
+            return BadRequest("Invalid email or password");
+
+        if (!user.IsEmailVerified)
+            return BadRequest("Please verify your email first.");
+
+        return Ok("Login Successful!");
+    }
+
+
+    // -------------------------------------------------------------
+    // NORMAL CRUD
+    // -------------------------------------------------------------
     [HttpGet]
     public async Task<IActionResult> GetUsers()
     {
         return Ok(await _context.Users.ToListAsync());
     }
 
-    // GET: api/users/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(int id)
     {
@@ -32,16 +116,6 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    // POST: api/users
-    [HttpPost]
-    public async Task<IActionResult> CreateUser(User user)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return Ok(user);
-    }
-
-    // PUT: api/users/5
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(int id, User updatedUser)
     {
@@ -56,7 +130,6 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    // DELETE: api/users/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -66,6 +139,5 @@ public class UsersController : ControllerBase
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
         return Ok("Deleted");
-    } 
-    
+    }
 }
