@@ -1,4 +1,4 @@
-﻿//the whole code is for creating initial migration for the database using Entity Framework Core which is used for managing database schema changes in a .NET application
+﻿using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
