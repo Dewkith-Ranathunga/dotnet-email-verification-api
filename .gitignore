@@ -73,3 +73,8 @@ artifacts/
 *.db-wal
 *.sqlite
 *.sqlite3
+
+# Configuration files with sensitive data
+appsettings.json
+appsettings.*.json
+!appsettings.Development.json
