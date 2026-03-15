@@ -26,8 +26,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Use CORS
-app.UseCors("AllowAll");
-
-app.MapControllers().RequireCors("AllowAll");
+app.UseRouting();         // must come first
+app.UseCors("AllowAll"); // must come before MapControllers
+app.MapControllers();
 app.Run();
