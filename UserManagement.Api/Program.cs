@@ -29,5 +29,5 @@ var app = builder.Build();
 // Use CORS
 app.UseCors("AllowAll");
 
-app.MapControllers();
+app.MapControllers().RequireCors("AllowAll");
 app.Run();
